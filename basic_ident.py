@@ -33,7 +33,8 @@ def h1(id):
         id: element in {0,1}^*
     Returns: element in G_1^*
     """
-    hash = hashlib.sha256(id).hexdigest().encode("hex")
+    hash = hashlib.sha256(str(id).encode("utf-8")).hexdigest()
+    # hash = hashlib.sha256(id).hexdigest().encode("hex")
     ee = int(hash, 16)
     # TODO send to group
     return hash

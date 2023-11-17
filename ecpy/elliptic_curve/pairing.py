@@ -102,36 +102,54 @@ def gen_supersingular_ec(bits=70):
     from ecpy.fields import ExtendedFiniteField
     from .EllipticCurve import EllipticCurve
 
-    def _next_prime(n):
-        from ecpy.utils import is_prime
-        """
+    p, l = gen_prime(bits)
+    F = ExtendedFiniteField(p, "x^2+x+1")
+    return EllipticCurve(F, 0, 1), F, l
+
+
+def _next_prime(n):
+    from ecpy.utils import is_prime
+    """
     return next prime of n
     """
-        while not is_prime(n):
-            n += 1
-        return n
+    while not is_prime(n):
+        n += 1
+    return n
 
-    """
+
+"""
   If you have gmpy, use gmpy.next_prime
   in other hand, use slow function
-  """
+"""
+
+
+def gen_prime(bits):
     try:
         from gmpy import next_prime
     except:
         next_prime = _next_prime
 
-    def gen_prime():
-        from ecpy.utils import is_prime
-        from random import randint
-        while True:
-            p = int(next_prime(randint(2 ** (bits - 1), 2 ** bits)))
-            if is_prime(p * 6 - 1):
-                break
-        return p * 6 - 1, p
+    from ecpy.utils import is_prime
+    from random import randint
+    while True:
+        p = int(next_prime(randint(2 ** (bits - 1), 2 ** bits)))
+        if is_prime(p * 6 - 1):
+            break
+    return p * 6 - 1, p
 
-    p, l = gen_prime()
-    F = ExtendedFiniteField(p, "x^2+x+1")
-    return EllipticCurve(F, 0, 1), F, l
+
+def gen_prime_mod_four(bits):
+    n=3
+    from ecpy.utils import is_prime
+    while True:
+        ee = 4*n+3
+        if is_prime(ee):
+            return ee
+        p, l = gen_prime(bits)
+        print(p)
+        print(p%4)
+        if p % 4 == 3:
+            return p
 
 
 def find_point_by_order(E, l):

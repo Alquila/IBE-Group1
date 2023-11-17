@@ -127,6 +127,7 @@ def modular_square_root_extended(x):
     A square root of x
   """
   if extended_legendre_symbol(x) != 1:
+    print("are you here")
     return []
   a = x
 
