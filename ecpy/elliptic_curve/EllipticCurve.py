@@ -306,8 +306,8 @@ class FiniteFieldEllipticCurve(GenericEllipticCurve):
     return random point on this curve.
     """
         rnd = [randint(0, s.field.order())] * s.field.degree()
-        print("in rand")
-        print(rnd)
+        # print("in rand")
+        # print(rnd)
         x = s.field(*rnd)
         while True:
             y = s.get_corresponding_y(x)

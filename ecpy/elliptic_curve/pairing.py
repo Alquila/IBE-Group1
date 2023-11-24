@@ -139,15 +139,15 @@ def gen_prime(bits):
 
 
 def gen_prime_mod_four(bits):
-    n=3
+    n = 3
     from ecpy.utils import is_prime
     while True:
-        ee = 4*n+3
+        ee = 4 * n + 3
         if is_prime(ee):
             return ee
         p, l = gen_prime(bits)
         print(p)
-        print(p%4)
+        print(p % 4)
         if p % 4 == 3:
             return p
 
@@ -183,3 +183,48 @@ def symmetric_weil_pairing(E, P, Q, m):
     m: The order of P, Q
   """
     return weil_pairing(E, P, Q.distortion_map(), m)
+
+
+def symmetric_tate_pairing(E, P, Q, m, k=2):
+    """
+  Symmetric Tate Pairing
+  \hat{e}(P, Q) = e(P, \phi(Q)) (\phi is Distortion Map)
+  Args:
+    E: The Elliptic Curve
+    P: A point on E which has order m
+    Q: A point on E which has order m
+    m: The order of P, Q
+    k: [Optional] The Embedding Degree of m on E
+  """
+    return tate_pairing(E, P, Q.distortion_map(), m)
+
+
+def tate_pairing(E, P, Q, m, k=2):
+    """
+  Calculate Tate Pairing
+  Args:
+    E: The Elliptic Curve
+    P: A point over E which has order m
+    Q: A point over E which has order m
+    m: The order of P, Q on E
+    k: [Optional] The Embedding Degree of m on E
+  """
+    # from ecpy.utils.util import is_enable_native, _native
+    # if is_enable_native:
+    #   P = _native.EC_elem(E.ec, tuple(P.x), tuple(P.y), tuple(P.z))
+    #   Q = _native.EC_elem(E.ec, tuple(Q.x), tuple(Q.y), tuple(Q.z))
+    #   if E.ec.type == 1:
+    #     t = _native.FF_elem(0)
+    #   elif E.ec.type == 2:
+    #     t = _native.EF_elem(0, 0)
+    #   _native.tate_pairing(t, E.ec, P, Q, m, k)
+    #   if E.ec.type == 1:
+    #     from ecpy.fields.Zmod import ZmodElement
+    #     return ZmodElement(E.field, t.to_python())
+    #   elif E.ec.type == 2:
+    #     from ecpy.fields.ExtendedFiniteField import ExtendedFiniteFieldElement
+    #     t = t.to_python()
+    #     return ExtendedFiniteFieldElement(E.field, t[0], t[1])
+    # else:
+    f = miller(E, P, Q, m)
+    return f ** (((E.field.p ** k) - 1) // m)
