@@ -3,6 +3,7 @@ from ecpy.fields import ExtendedFiniteField
 from ecpy.elliptic_curve import EllipticCurve
 import hashlib
 import random
+import secrets
 
 
 def bdh_parameter_generator():
@@ -15,15 +16,17 @@ def bdh_parameter_generator():
                  "7684401801069777797699258667061922178009879315047772033936311133"
                  "535564812495329881887557081"))
 
-    s = int("129862491850266001914601437161941818413833907050695770313188660767"
-            "152646233571458109764766382285470424230719843324368007925375351295"
-            "39576510740045312772012")
-    sP = E(s,
-           int("452543250979361708074026409576755302296698208397782707067096515523"
-               "033579018123253402743775747767548650767928190884624134827869137911"
-               "24188897792458334596297"))
-    l = (q+1)//6
-    return q, F, E, P, s, sP, l
+    s = secrets.randbelow(q)
+    sP = s * P  # TODO should it be multiplied or on the curve ?
+    # sP = E(s,
+    #        int("452543250979361708074026409576755302296698208397782707067096515523"
+    #            "033579018123253402743775747767548650767928190884624134827869137911"
+    #            "24188897792458334596297"))
+    # todo P.__mul__(s) ??
+    # todo s * P ??
+    order = (q + 1) // 6
+    return q, F, E, P, s, sP, order
+
 
 def setup(k):
     E, F, l = gen_supersingular_ec(k)
@@ -76,13 +79,14 @@ def encrypt(E, P, m, id, P_pub, q, order):
     # Q_id = H1(id) \in G_1^*
     Q_id = h1(id, P)
     # choose random r \in Z_q^*
-    r = random.randint(1, q)
+    r = secrets.randbelow(q)  # FIXME what is it here
     # Compute g_id = e(Q_id, P_pub) \in G_2^*
     g_id = symmetric_weil_pairing(E, Q_id, P_pub, order)  # TODO is order of G_1 G_2 q or order=(q+1)/6
     # Compute g_id ^ r
     g_id_r = g_id ** r
     # Compute H2(g_id^r) \in {0,1}^n
     h2_ = h2(g_id_r)
+    # print("h2:" + str(h2_))
     return r * P, m ^ h2_
 
 
