@@ -61,6 +61,7 @@ def h2(g_id_r):
     return g_id_r.x * g_id_r.field.p + g_id_r.y
 
 
+# TODO extract g_ID instead of computing everytime
 def encrypt(E, P, m, id, P_pub, q, order):
     """
     Encrypt the message m
