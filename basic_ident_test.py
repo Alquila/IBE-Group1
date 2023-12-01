@@ -105,43 +105,19 @@ class MyTestCase(unittest.TestCase):
         print(p)
 
     def test_stuff(self):
-        q, F, E, P, s, P_pub, order = bdh_parameter_generator()
+        q, F, E, P, s, P_pub, order = setup()
 
-        #message = hex(80)
-        #print(type(message))
-        #message = int(message, 16)
-        message2 = 42
-
+        message = 1122023
         id_ = "bob.email"
-        print("result from hashing")
-        print(h1(id_, P))
 
         d_id = extract(P, id_, s)
-        print("d_id: ")
-        print(d_id)
-        #u,v = encrypt(E, P, message, id_, P_pub, q, order)
-        u2,v2 = encrypt(E, P, message2, id_, P_pub, q, order)
-        print("encryptions type")
-        # print("u, v ", u, v)
-        # print("u2v2 ", u2, v2)
-        print("type u2: " + str(type(u2)))
-        print("type v2: " + str(type(v2)))
-        #d = decrypt(E, u,v, d_id, order)
-        d2 = decrypt(E, u2, v2, d_id, order)
+        u,v = encrypt(E, P, message, id_, P_pub, q, order)
 
+        d = decrypt(E, u, v, d_id, order)
 
-        #print(type(d))
-        print("d2: \n" + str(d2))
+        print("decrypted message: \n" + str(d))
 
-        #hmm = "0" + hex(d)[2:-1]
-        #hmmmm = hex(d)[2:-1]
-        #print(hmm)
-        #print(hmmmm)
-        #a = bytes.fromhex(hmmmm).decode('utf-8')
-        #a = bytes.fromhex(hmm).decode('utf-8')
-        #print(a)
-
-        self.assertEqual(message2, d2)
+        self.assertEqual(message, d)
 
 
 #  TODO find out what this does on input H(E.field(symmetric_tate_pairing(E, sP, pubkey, l) ** r))) = H2(g_id^r)

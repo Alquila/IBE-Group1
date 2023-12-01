@@ -2,42 +2,40 @@ from ecpy.elliptic_curve.pairing import gen_supersingular_ec, symmetric_weil_pai
 from ecpy.fields import ExtendedFiniteField
 from ecpy.elliptic_curve import EllipticCurve
 import hashlib
-import random
 import secrets
 
 
-def bdh_parameter_generator():
+def setup():
+    """
+    Generate BDH parameters
+
+    Returns: prime q, F, E, random generator P, master-key s, P_pub (sP), order
+    """
+    # The prime q:
     q = int("501794446334189957604282155189438160845433783392772743395579628617109"
             "929160215221425142482928909270259580854362463493326988807453595748573"
             "76419559953437557")
+
+    # The Finite Field (G2) and EllipticCurve (G1) #TODO Understand
     F = ExtendedFiniteField(q, "x^2+x+1")
     E = EllipticCurve(F, 0, 1)
+
+    # a point of order q
     P = E(3, int("1418077311270457886139292292020587683642898636677353664354101171"
                  "7684401801069777797699258667061922178009879315047772033936311133"
                  "535564812495329881887557081"))
 
+    # Random s in Z_q^*
     s = secrets.randbelow(q)
-    sP = s * P  # TODO should it be multiplied or on the curve ?
-    # sP = E(s,
-    #        int("452543250979361708074026409576755302296698208397782707067096515523"
-    #            "033579018123253402743775747767548650767928190884624134827869137911"
-    #            "24188897792458334596297"))
-    # todo P.__mul__(s) ??
-    # todo s * P ??
+    # P_pub = sP
+    P_pub = s * P
+
+    # Order of points
     order = (q + 1) // 6
-    return q, F, E, P, s, sP, order
+    return q, F, E, P, s, P_pub, order
 
 
-def setup(k):
-    E, F, l = gen_supersingular_ec(k)
-
-
-# Eliptic curve E, points P,Q, m order of P,Q
-def useWeil(E, P, Q, m):
-    aa = symmetric_weil_pairing(E, P, Q, m)
-
-
-def h1(id_, P):
+def H1(id_, P):
     """
     Send element to G_1^*
     Args:
@@ -50,15 +48,17 @@ def h1(id_, P):
     return hash_as_int * P
 
 
-def h2(g_id_r):
+def H2(g_id_r):
     """
     Sends element from G_2^* to {0,1}^n for some n
+    hash coordinates
     Args:
         g_id_r: element in G_2^*
     Returns: element in {0,1}^n
     """
     #  TODO send from group to {0,1}^n
     return g_id_r.x * g_id_r.field.p + g_id_r.y
+
 
 
 # TODO extract g_ID instead of computing everytime
@@ -78,16 +78,16 @@ def encrypt(E, P, m, id, P_pub, q, order):
 
     """
     # Q_id = H1(id) \in G_1^*
-    Q_id = h1(id, P)
+    Q_id = H1(id, P)
     # choose random r \in Z_q^*
-    r = secrets.randbelow(q)  # FIXME what is it here
-    # Compute g_id = e(Q_id, P_pub) \in G_2^*
+    r = secrets.randbelow(q)
+    # Compute g_id = ê(Q_id, P_pub) \in G_2^*
     g_id = symmetric_weil_pairing(E, Q_id, P_pub, order)  # TODO is order of G_1 G_2 q or order=(q+1)/6
     # Compute g_id ^ r
     g_id_r = g_id ** r
     # Compute H2(g_id^r) \in {0,1}^n
-    h2_ = h2(g_id_r)
-    # print("h2:" + str(h2_))
+    h2_ = H2(g_id_r)
+
     return r * P, m ^ h2_
 
 
@@ -106,7 +106,7 @@ def decrypt(E, u, v, secret_key_d_id, order):
 
     e_d_u = symmetric_weil_pairing(E, secret_key_d_id, u, order)  # e(d_id, U) element in G_2^*
 
-    h2_ = h2(E.field(e_d_u))  # element in {0,1}^n
+    h2_ = H2(E.field(e_d_u))  # element in {0,1}^n
 
     return v ^ h2_  # m
 
@@ -115,5 +115,31 @@ def extract(P, id_, s):
     """"
     Given string ID in {0,1}^*, compute Q_ID = H_1(ID) in G_1^* and set private key d_id to be s*Q_ID
     """
-    q_id = h1(id_, P)  # in G_1^*
+    q_id = H1(id_, P)  # in G_1^*
     return s * q_id  # d_ID
+
+
+def basic_ident(message):
+    q, F, E, P, s, P_pub, order = setup()
+    id = "bob.email"
+    is_string = False
+    if isinstance(message, str):
+        is_string = True
+        m_to_bytes = message.encode('utf-8')
+        message = int.from_bytes(m_to_bytes, 'little')
+
+
+    d_id = extract(P, id, s)
+    u, v = encrypt(E, P, message, id, P_pub, q, order)
+
+    d = decrypt(E, u, v, d_id, order)
+
+    if is_string:
+        d_to_bytes = d.to_bytes((d.bit_length() +7) // 8, 'little')
+        d = d_to_bytes.decode('utf-8')
+
+    print("decrypted message: \n" + str(d))
+
+
+message = "does the work if yes why"
+basic_ident(message)
