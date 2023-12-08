@@ -48,6 +48,7 @@ def H1(id_, P):
     return hash_as_int * P
 
 
+# Taken from ecpy library
 def H2(g_id_r):
     """
     Sends element from G_2^* to {0,1}^n for some n
@@ -56,9 +57,9 @@ def H2(g_id_r):
         g_id_r: element in G_2^*
     Returns: element in {0,1}^n
     """
-    #  TODO send from group to {0,1}^n
-    return g_id_r.x * g_id_r.field.p + g_id_r.y
-
+    xy = g_id_r.x + g_id_r.y
+    hash_ = hashlib.sha256(str(xy).encode("utf-8")).hexdigest()
+    return int(hash_, 16)
 
 
 # TODO extract g_ID instead of computing everytime
@@ -87,7 +88,6 @@ def encrypt(E, P, m, id, P_pub, q, order):
     g_id_r = g_id ** r
     # Compute H2(g_id^r) \in {0,1}^n
     h2_ = H2(g_id_r)
-
     return r * P, m ^ h2_
 
 
@@ -128,18 +128,17 @@ def basic_ident(message):
         m_to_bytes = message.encode('utf-8')
         message = int.from_bytes(m_to_bytes, 'little')
 
-
     d_id = extract(P, id, s)
     u, v = encrypt(E, P, message, id, P_pub, q, order)
 
     d = decrypt(E, u, v, d_id, order)
 
     if is_string:
-        d_to_bytes = d.to_bytes((d.bit_length() +7) // 8, 'little')
+        d_to_bytes = d.to_bytes((d.bit_length() + 7) // 8, 'little')
         d = d_to_bytes.decode('utf-8')
 
     print("decrypted message: \n" + str(d))
 
 
-message = "does the work if yes why"
-basic_ident(message)
+#message = "does the work if yes why"
+#basic_ident(message)

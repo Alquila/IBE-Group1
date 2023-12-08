@@ -105,19 +105,34 @@ class MyTestCase(unittest.TestCase):
         print(p)
 
     def test_stuff(self):
-        q, F, E, P, s, P_pub, order = setup()
-
         message = 1122023
+        q, F, E, P, s, P_pub, order = setup()
         id_ = "bob.email"
 
         d_id = extract(P, id_, s)
-        u,v = encrypt(E, P, message, id_, P_pub, q, order)
+        u, v = encrypt(E, P, message, id_, P_pub, q, order)
 
         d = decrypt(E, u, v, d_id, order)
 
-        print("decrypted message: \n" + str(d))
+        print("encrypted message: \n" + str(message) + "\n")
+        print("decrypted message: \n" + str(d)+ "\n")
 
         self.assertEqual(message, d)
+
+    def test_basic_indent(self):
+        message_strings = ["does it work", "this is a longer string as I dont know how long they can be",
+                           'lol', "PlEasE woRK"]
+        message_int = [123456789, 1989, 42, 666, 8965432797543467899076543234567893456789345678934567]
+
+        for message in message_strings:
+            print("encrypted message: \n" + message)
+            basic_ident(message)
+
+        for i in message_int:
+            print("encrypted message: \n" + str(i))
+            basic_ident(i)
+
+            self.assertEqual(i, i)
 
 
 #  TODO find out what this does on input H(E.field(symmetric_tate_pairing(E, sP, pubkey, l) ** r))) = H2(g_id^r)
