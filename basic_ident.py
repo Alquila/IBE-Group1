@@ -16,7 +16,7 @@ def setup():
             "929160215221425142482928909270259580854362463493326988807453595748573"
             "76419559953437557")
 
-    # The Finite Field (G2) and EllipticCurve (G1) #TODO Understand
+    # The Finite Field (G2) and EllipticCurve (G1)
     F = ExtendedFiniteField(q, "x^2+x+1")
     E = EllipticCurve(F, 0, 1)
 
@@ -61,6 +61,12 @@ def H2(g_id_r):
     hash_ = hashlib.sha256(str(xy).encode("utf-8")).hexdigest()
     return int(hash_, 16)
 
+def extract(P, id_, s):
+    """"
+    Given string ID in {0,1}^*, compute Q_ID = H_1(ID) in G_1^* and set private key d_id to be s*Q_ID
+    """
+    q_id = H1(id_, P)  # in G_1^*
+    return s * q_id  # d_ID
 
 # TODO extract g_ID instead of computing everytime
 def encrypt(E, P, m, id, P_pub, q, order):
@@ -71,9 +77,9 @@ def encrypt(E, P, m, id, P_pub, q, order):
         P: The generator of G_1
         m: the message
         id: The ID of the receiver
-        P_pub: The public something
+        P_pub: The public key TODO: public wtf??¿¿
         q: The prime order of G_1 G_2
-        order: The order of something
+        order: The order
 
     Returns: Encryption of the form (U,V) in G_1^* x {0,1}^n
 
@@ -83,7 +89,7 @@ def encrypt(E, P, m, id, P_pub, q, order):
     # choose random r \in Z_q^*
     r = secrets.randbelow(q)
     # Compute g_id = ê(Q_id, P_pub) \in G_2^*
-    g_id = symmetric_weil_pairing(E, Q_id, P_pub, order)  # TODO is order of G_1 G_2 q or order=(q+1)/6
+    g_id = symmetric_weil_pairing(E, Q_id, P_pub, order)
     # Compute g_id ^ r
     g_id_r = g_id ** r
     # Compute H2(g_id^r) \in {0,1}^n
@@ -111,26 +117,18 @@ def decrypt(E, u, v, secret_key_d_id, order):
     return v ^ h2_  # m
 
 
-def extract(P, id_, s):
-    """"
-    Given string ID in {0,1}^*, compute Q_ID = H_1(ID) in G_1^* and set private key d_id to be s*Q_ID
-    """
-    q_id = H1(id_, P)  # in G_1^*
-    return s * q_id  # d_ID
-
-
 def basic_ident(message):
     q, F, E, P, s, P_pub, order = setup()
-    id = "bob.email"
+    id_ = "pub@company.com"
     is_string = False
     if isinstance(message, str):
         is_string = True
         m_to_bytes = message.encode('utf-8')
         message = int.from_bytes(m_to_bytes, 'little')
 
-    d_id = extract(P, id, s)
-    u, v = encrypt(E, P, message, id, P_pub, q, order)
+    u, v = encrypt(E, P, message, id_, P_pub, q, order)
 
+    d_id = extract(P, id_, s)
     d = decrypt(E, u, v, d_id, order)
 
     if is_string:
@@ -138,7 +136,4 @@ def basic_ident(message):
         d = d_to_bytes.decode('utf-8')
 
     print("decrypted message: \n" + str(d))
-
-
-#message = "does the work if yes why"
-#basic_ident(message)
+    return d

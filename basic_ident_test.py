@@ -125,20 +125,14 @@ class MyTestCase(unittest.TestCase):
         message_int = [123456789, 1989, 42, 666, 8965432797543467899076543234567893456789345678934567]
 
         for message in message_strings:
-            print("encrypted message: \n" + message)
-            basic_ident(message)
+            #print("encrypted message: \n" + message)
+            d = basic_ident(message)
+            self.assertEqual(message, d)
 
         for i in message_int:
-            print("encrypted message: \n" + str(i))
-            basic_ident(i)
-
-            self.assertEqual(i, i)
-
-
-#  TODO find out what this does on input H(E.field(symmetric_tate_pairing(E, sP, pubkey, l) ** r))) = H2(g_id^r)
-#  TODO find out what E.field(symmetric_tate_pairing(E, sP, pubkey, l) ** r)) is of type
-def H(x):
-    return x.x * x.field.p + x.y
+            #print("encrypted message: \n" + str(i))
+            d = basic_ident(i)
+            self.assertEqual(i, d)
 
 
 if __name__ == '__main__':
