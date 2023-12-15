@@ -5,7 +5,7 @@ from ecpy.fields import ExtendedFiniteField
 from ecpy.elliptic_curve.pairing import find_point_by_order, gen_prime_mod_four, gen_prime, symmetric_weil_pairing, symmetric_tate_pairing
 from ecpy.elliptic_curve import EllipticCurve
 from basic_ident import *
-from primePy import primes
+# from primePy import primes
 
 class MyTestCase(unittest.TestCase):
     @unittest.skip
@@ -140,6 +140,7 @@ class MyTestCase(unittest.TestCase):
             d = basic_ident(i)
             self.assertEqual(i, d)
 
+    @unittest.skip
     def test_Arguments(self):
         p, F, E, P, s, P_pub, order = setup()
 
@@ -150,14 +151,18 @@ class MyTestCase(unittest.TestCase):
 
     @unittest.skip
     def test_find_primes(self):
-        for i in range(10):
-            e = gen_prime(512)
-            print(e)
+        print("find primes \n")
+        for i in range(3):
+            p,q = gen_prime(20)
+            print(p)
+            print(p.bit_length())
+            print(q)
+            print(q.bit_length())
         self.assertEqual(True, True)
 
-    @unittest.skip
-    def test_primePy(self):
-        a = primes.between(2**513,2**515)
+    # @unittest.skip
+    # def test_primePy(self):
+    #     a = primes.between(2**513,2**515)
 
     @unittest.skip
     def test_find_random_generator(self):

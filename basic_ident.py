@@ -66,7 +66,7 @@ def extract(P, id_, s):
     return s * q_id  # d_ID
 
 # TODO extract g_ID instead of computing everytime
-def encrypt(E, P, m, id, P_pub, p, order):
+def encrypt(E, P, m, id, P_pub, order):
     """
     Encrypt the message m
     Args:
@@ -75,8 +75,7 @@ def encrypt(E, P, m, id, P_pub, p, order):
         m: the message
         id: The ID of the receiver
         P_pub: The public key TODO: public wtf??¿¿
-        q: The prime order of G_1 G_2
-        order: The order
+        order: The order of P, Q
 
     Returns: Encryption of the form (U,V) in G_1^* x {0,1}^n
 
@@ -123,7 +122,7 @@ def basic_ident(message):
         m_to_bytes = message.encode('utf-8')
         message = int.from_bytes(m_to_bytes, 'little')
 
-    u, v = encrypt(E, P, message, id_, P_pub, p, order)
+    u, v = encrypt(E, P, message, id_, P_pub, order)
 
     d_id = extract(P, id_, s)
     d = decrypt(E, u, v, d_id, order)
