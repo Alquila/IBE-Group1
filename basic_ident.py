@@ -1,4 +1,4 @@
-from ecpy.elliptic_curve.pairing import gen_supersingular_ec, symmetric_weil_pairing
+from ecpy.elliptic_curve.pairing import find_point_by_order, gen_supersingular_ec, symmetric_weil_pairing
 from ecpy.fields import ExtendedFiniteField
 from ecpy.elliptic_curve import EllipticCurve
 import hashlib
@@ -9,30 +9,27 @@ def setup():
     """
     Generate BDH parameters
 
-    Returns: prime q, F, E, random generator P, master-key s, P_pub (sP), order
+    Returns: prime p, F, E, random generator P, master-key s, P_pub (sP), order
     """
-    # The prime q:
-    q = int("501794446334189957604282155189438160845433783392772743395579628617109"
-            "929160215221425142482928909270259580854362463493326988807453595748573"
-            "76419559953437557")
+    # The prime q:    
+    p = int("40838243888440222194513047318433462181794082107565421749840580958183723553113450391291240027817728253892367020955719075895074492916387884536971247198768837")
 
-    # The Finite Field (G2) and EllipticCurve (G1)
-    F = ExtendedFiniteField(q, "x^2+x+1")
+    # The Finite Field and EllipticCurve
+    F = ExtendedFiniteField(p, "x^2+x+1")
     E = EllipticCurve(F, 0, 1)
 
-    # a point of order q
-    P = E(3, int("1418077311270457886139292292020587683642898636677353664354101171"
-                 "7684401801069777797699258667061922178009879315047772033936311133"
-                 "535564812495329881887557081"))
+    # Order of points
+    order = (p + 1) // 6
 
+    # a point of order q
+    P = find_point_by_order(E, order)
+    
     # Random s in Z_q^*
-    s = secrets.randbelow(q)
+    s = secrets.randbelow(order)
+    
     # P_pub = sP
     P_pub = s * P
-
-    # Order of points
-    order = (q + 1) // 6
-    return q, F, E, P, s, P_pub, order
+    return p, F, E, P, s, P_pub, order
 
 
 def H1(id_, P):
@@ -57,7 +54,7 @@ def H2(g_id_r):
         g_id_r: element in G_2^*
     Returns: element in {0,1}^n
     """
-    xy = g_id_r.x + g_id_r.y
+    xy = g_id_r.x * g_id_r.field.p + g_id_r.y
     hash_ = hashlib.sha256(str(xy).encode("utf-8")).hexdigest()
     return int(hash_, 16)
 
@@ -69,7 +66,7 @@ def extract(P, id_, s):
     return s * q_id  # d_ID
 
 # TODO extract g_ID instead of computing everytime
-def encrypt(E, P, m, id, P_pub, q, order):
+def encrypt(E, P, m, id, P_pub, p, order):
     """
     Encrypt the message m
     Args:
@@ -87,11 +84,11 @@ def encrypt(E, P, m, id, P_pub, q, order):
     # Q_id = H1(id) \in G_1^*
     Q_id = H1(id, P)
     # choose random r \in Z_q^*
-    r = secrets.randbelow(q)
+    r = secrets.randbelow(order)
     # Compute g_id = ê(Q_id, P_pub) \in G_2^*
     g_id = symmetric_weil_pairing(E, Q_id, P_pub, order)
     # Compute g_id ^ r
-    g_id_r = g_id ** r
+    g_id_r = E.field(g_id) ** r
     # Compute H2(g_id^r) \in {0,1}^n
     h2_ = H2(g_id_r)
     return r * P, m ^ h2_
@@ -118,7 +115,7 @@ def decrypt(E, u, v, secret_key_d_id, order):
 
 
 def basic_ident(message):
-    q, F, E, P, s, P_pub, order = setup()
+    p, F, E, P, s, P_pub, order = setup()
     id_ = "pub@company.com"
     is_string = False
     if isinstance(message, str):
@@ -126,7 +123,7 @@ def basic_ident(message):
         m_to_bytes = message.encode('utf-8')
         message = int.from_bytes(m_to_bytes, 'little')
 
-    u, v = encrypt(E, P, message, id_, P_pub, q, order)
+    u, v = encrypt(E, P, message, id_, P_pub, p, order)
 
     d_id = extract(P, id_, s)
     d = decrypt(E, u, v, d_id, order)

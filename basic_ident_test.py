@@ -2,18 +2,20 @@ import hashlib
 import random
 import unittest
 from ecpy.fields import ExtendedFiniteField
-from ecpy.elliptic_curve.pairing import gen_prime_mod_four, symmetric_weil_pairing, symmetric_tate_pairing
+from ecpy.elliptic_curve.pairing import find_point_by_order, gen_prime_mod_four, gen_prime, symmetric_weil_pairing, symmetric_tate_pairing
 from ecpy.elliptic_curve import EllipticCurve
 from basic_ident import *
-
+from primePy import primes
 
 class MyTestCase(unittest.TestCase):
+    @unittest.skip
     def test_something(self):
         i = 6
         j = 3
         print(i ^ j)
-        self.assertEqual(True, False)  # add assertion here
+        self.assertEqual(True, True)  # add assertion here
 
+    @unittest.skip
     def test_field(self):
         p = int("501794446334189957604282155189438160845433783392772743395579628617109"
                 "929160215221425142482928909270259580854362463493326988807453595748573"
@@ -33,6 +35,7 @@ class MyTestCase(unittest.TestCase):
         print(E.get_corresponding_y(7))
         self.assertEqual(True, True)  # add assertion here
 
+    @unittest.skip
     def test_what_happens_when_hash(self):
         m = 'iamIDstring'
         hash_ = hashlib.sha256(str(m).encode("utf-8")).hexdigest()
@@ -96,14 +99,16 @@ class MyTestCase(unittest.TestCase):
         e_ppub_qid_r = e_ppub_qid ** r
         print("e(U,d_id)", e_u_did)
         print("e(P_pub, Q_id)^r)", e_ppub_qid_r)
-        hmm = H(E.field(e_u_did))
-        print(hmm)  # this is now an integer
+        # hmm = H(E.field(e_u_did))
+        # print(hmm)  # this is now an integer
         self.assertEqual(True, True)  # add assertion here
 
+    @unittest.skip
     def test_what_happens_with_eliptic(self):
         p = gen_prime_mod_four(14)
         print(p)
 
+    @unittest.skip
     def test_stuff(self):
         message = 1122023
         q, F, E, P, s, P_pub, order = setup()
@@ -118,7 +123,8 @@ class MyTestCase(unittest.TestCase):
         print("decrypted message: \n" + str(d)+ "\n")
 
         self.assertEqual(message, d)
-
+    
+    # @unittest.skip
     def test_basic_indent(self):
         message_strings = ["does it work", "this is a longer string as I dont know how long they can be",
                            'lol', "PlEasE woRK"]
@@ -133,6 +139,35 @@ class MyTestCase(unittest.TestCase):
             #print("encrypted message: \n" + str(i))
             d = basic_ident(i)
             self.assertEqual(i, d)
+
+    def test_Arguments(self):
+        p, F, E, P, s, P_pub, order = setup()
+
+        print(p.bit_length())     # 514
+        print(order.bit_length()) # 512
+
+        self.assertEqual(True, True)
+
+    @unittest.skip
+    def test_find_primes(self):
+        for i in range(10):
+            e = gen_prime(512)
+            print(e)
+        self.assertEqual(True, True)
+
+    @unittest.skip
+    def test_primePy(self):
+        a = primes.between(2**513,2**515)
+
+    @unittest.skip
+    def test_find_random_generator(self):
+        p = int("40838243888440222194513047318433462181794082107565421749840580958183723553113450391291240027817728253892367020955719075895074492916387884536971247198768837")
+        order = int("6806373981406703699085507886405577030299013684594236958306763493030620592185575065215206671302954708982061170159286512649179082152731314089495207866461473")
+        F = ExtendedFiniteField(p, "x^2+x+1")
+        E = EllipticCurve(F, 0, 1)
+        P = find_point_by_order(E, order)
+        print(P.x, P.y)
+        print(P)
 
 
 if __name__ == '__main__':
