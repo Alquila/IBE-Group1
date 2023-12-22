@@ -25,7 +25,7 @@ def setup():
     P = find_point_by_order(E, order)
     
     # Random s in Z_q^*
-    s = secrets.randbelow(order)
+    s = secrets.randbelow(order-1)+1
     
     # P_pub = sP
     P_pub = s * P
@@ -45,7 +45,6 @@ def H1(id_, P):
     return hash_as_int * P
 
 
-# Taken from ecpy library
 def H2(g_id_r):
     """
     Sends element from G_2^* to {0,1}^n for some n
@@ -65,7 +64,6 @@ def extract(P, id_, s):
     q_id = H1(id_, P)  # in G_1^*
     return s * q_id  # d_ID
 
-# TODO extract g_ID instead of computing everytime
 def encrypt(E, P, m, id, P_pub, order):
     """
     Encrypt the message m

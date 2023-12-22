@@ -42,7 +42,6 @@ class MyTestCase(unittest.TestCase):
         hash_id = int(hash_, 16)  # 16 because in Hex base
         print(hash_)  # is hex encoded string
         print(hash_id)  # is an integer
-        # TODO what happens when we do ee*P ? Is that then a group element?
         p = int("501794446334189957604282155189438160845433783392772743395579628617109"
                 "929160215221425142482928909270259580854362463493326988807453595748573"
                 "76419559953437557")
@@ -52,7 +51,6 @@ class MyTestCase(unittest.TestCase):
                      "7684401801069777797699258667061922178009879315047772033936311133"
                      "535564812495329881887557081"))
         q_id = hash_id * P  # is a point on the elliptic curve
-        # print(eep)
         l = (p + 1) // 6
         s = random.randint(1, p - 1)
         P_pub = s * P
@@ -79,8 +77,6 @@ class MyTestCase(unittest.TestCase):
         g_id_r = g_id ** r
         print("raising to r")
         print(e_qid_ppub ** r)
-        # print(g_id_r_field)
-        # print()
 
         # extract d_id
         s_qid = s * q_id
@@ -88,7 +84,6 @@ class MyTestCase(unittest.TestCase):
 
         # decryption U
         rP = r * P
-        # e(d_id, U) in decrypt
         e_did_u = symmetric_weil_pairing(E, d_id, rP, l)
         print("compare")
         print("e(d_id, U)", e_did_u)
@@ -99,8 +94,6 @@ class MyTestCase(unittest.TestCase):
         e_ppub_qid_r = e_ppub_qid ** r
         print("e(U,d_id)", e_u_did)
         print("e(P_pub, Q_id)^r)", e_ppub_qid_r)
-        # hmm = H(E.field(e_u_did))
-        # print(hmm)  # this is now an integer
         self.assertEqual(True, True)  # add assertion here
 
     @unittest.skip
@@ -124,10 +117,9 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual(message, d)
     
-    # @unittest.skip
     def test_basic_indent(self):
-        message_strings = ["does it work", "this is a longer string as I dont know how long they can be",
-                           'lol', "PlEasE woRK"]
+        message_strings = ["message", "another longer message to try",
+                           'it does work', "i love when code works"]
         message_int = [123456789, 1989, 42, 666, 8965432797543467899076543234567893456789345678934567]
 
         for message in message_strings:
@@ -159,10 +151,6 @@ class MyTestCase(unittest.TestCase):
             print(q)
             print(q.bit_length())
         self.assertEqual(True, True)
-
-    # @unittest.skip
-    # def test_primePy(self):
-    #     a = primes.between(2**513,2**515)
 
     @unittest.skip
     def test_find_random_generator(self):
